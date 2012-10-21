@@ -27,6 +27,8 @@ License: GPL2
 
 /**
  * Initiate plugin
+ *
+ * @since 1.0.0
  */
 function themeblvd_bb_code_snippets(){
 	
@@ -122,6 +124,11 @@ function themeblvd_bb_convert_html( $matches ) {
 /**
  * Format content for replies and topics assuming that 
  * wpautop has been removed.
+ * 
+ * @since 1.0.0
+ *
+ * @param string $content Content retrieved for reply or topic
+ * @return string $new_content Final content chunks put back together
  */
 function themeblvd_bb_content_formatter( $content ) {
 	

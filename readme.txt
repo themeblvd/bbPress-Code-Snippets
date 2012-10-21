@@ -8,7 +8,7 @@ Automatically display HTML/PHP code posted in bbPress topics and replies.
 
 == Description ==
 
-The goal of this plugin is to allow your bbPress users to post code snippets in their forum topics and replies without having to learn anything new. Basically, any raw HTML/PHP posted within `<pre>` or `<code>` tags will automatically be converted and displayed in the forum as you'd expect it would.
+No fancy, complicated syntax highlighting here. The goal of this plugin is to allow your bbPress users to post code snippets in their forum topics and replies without having to learn anything new. Basically, any raw HTML/PHP posted within `<pre>` or `<code>` tags will automatically be converted and displayed in the forum as you'd expect it would. 
 
 And additionally, anything posted within `<pre>` tags will be automatically escaped from bbPress applying wpautop. This will allow for your forum users' code snippets to keep their whitespace as they intend.
 
