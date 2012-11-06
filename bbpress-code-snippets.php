@@ -2,7 +2,7 @@
 /*
 Plugin Name: bbPress Code Snippets
 Description: Automatically display HTML/PHP code posted in bbPress topics and replies.
-Version: 1.0.0
+Version: 1.0.1
 Author: Jason Bobich
 Author URI: http://jasonbobich.com
 License: GPL2
@@ -31,6 +31,9 @@ License: GPL2
  * @since 1.0.0
  */
 function themeblvd_bb_code_snippets(){
+	
+	// Allow normal user's to use <pre> tags.
+	add_action( 'init', 'themeblvd_bb_add_pre_tags' );
 	
 	// Convert PHP open/close tags so they'll save safely.
 	add_filter( 'bbp_edit_reply_pre_content', 'themeblvd_bb_save_php', 9 );
@@ -151,4 +154,14 @@ function themeblvd_bb_content_formatter( $content ) {
 	}
 	
 	return $new_content;
+}
+
+/** 
+ * All <pre> tags in replies/topics
+ *
+ * @since 1.0.1
+ */
+function themeblvd_bb_add_pre_tags(){
+	global $allowedtags;
+	$allowedtags['pre'] = array();
 }
