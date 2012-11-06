@@ -2,7 +2,7 @@
 Author URI: http://www.jasonbobich.com
 Contributors: themeblvd
 Tags: bbpress, code, pre, snippets, topics, replies
-Stable Tag: 1.0.0
+Stable Tag: 1.0.1
 
 Automatically display HTML/PHP code posted in bbPress topics and replies.
 
@@ -18,6 +18,10 @@ And additionally, anything posted within `<pre>` tags will be automatically esca
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1.0.1 =
+
+* Added `<pre>` tag to WordPress's global $allowedtags so non-admin users can actually post with the `<pre>` tag.
 
 = 1.0.0 =
 
