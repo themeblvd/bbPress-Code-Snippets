@@ -2,7 +2,7 @@
 /*
 Plugin Name: bbPress Code Snippets
 Description: Automatically display HTML/PHP code posted in bbPress topics and replies.
-Version: 1.0.1
+Version: 1.0.2
 Author: Jason Bobich
 Author URI: http://jasonbobich.com
 License: GPL2
@@ -52,6 +52,8 @@ function themeblvd_bb_code_snippets(){
 	add_filter( 'bbp_get_topic_content', 'themeblvd_bb_code', 2 );
 
 	// Remove bbPress wpautop on replies/topics
+	remove_filter( 'bbp_get_reply_content', 'make_clickable', 9 );
+	remove_filter( 'bbp_get_topic_content', 'make_clickable', 9 );
 	remove_filter( 'bbp_get_reply_content', 'wpautop', 30 );
 	remove_filter( 'bbp_get_topic_content', 'wpautop', 30 );
 	
@@ -150,7 +152,7 @@ function themeblvd_bb_content_formatter( $content ) {
 		if( preg_match( $pattern_contents, $piece, $matches ) )
 			$new_content .= '<pre>'.trim($matches[1]).'</pre>';
 		else
-			$new_content .= shortcode_unautop( wpautop( $piece ) );
+			$new_content .= shortcode_unautop( wpautop( make_clickable( $piece ) ) );
 	}
 	
 	return $new_content;
