@@ -53,16 +53,12 @@ function themeblvd_bb_code_snippets(){
 	
 	// Remove pre_content filters
 	remove_filter( 'bbp_new_reply_pre_content',  'balanceTags'     );
-	remove_filter( 'bbp_new_reply_pre_content',  'wp_filter_kses'  );
 	remove_filter( 'bbp_new_topic_pre_content',  'balanceTags'     );
 	remove_filter( 'bbp_new_topic_pre_content',  'wp_rel_nofollow' );
-	remove_filter( 'bbp_new_topic_pre_content',  'wp_filter_kses'  );
 	remove_filter( 'bbp_edit_reply_pre_content', 'balanceTags'     );
 	remove_filter( 'bbp_edit_reply_pre_content', 'wp_rel_nofollow' );
-	remove_filter( 'bbp_edit_reply_pre_content', 'wp_filter_kses'  );
 	remove_filter( 'bbp_edit_topic_pre_content', 'balanceTags'     );
 	remove_filter( 'bbp_edit_topic_pre_content', 'wp_rel_nofollow' );
-	remove_filter( 'bbp_edit_topic_pre_content', 'wp_filter_kses'  );
 	
 	// And now, loop through and put pre_content items back on the chunks 
 	// that are not in <pre> tags.
@@ -205,7 +201,7 @@ function themeblvd_bb_pre_content_formatter( $content ) {
 		if( preg_match( $pattern_contents, $piece, $matches ) )
 			$new_content .= '<pre>'.trim($matches[1]).'</pre>';
 		else
-			$new_content .= wp_filter_kses( wp_rel_nofollow( balanceTags( $piece ) ) );
+			$new_content .= wp_rel_nofollow( balanceTags( $piece ) );
 	}
 	
 	return $new_content;
