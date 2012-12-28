@@ -2,7 +2,7 @@
 Author URI: http://www.jasonbobich.com
 Contributors: themeblvd
 Tags: bbpress, code, pre, snippets, topics, replies
-Stable Tag: 1.0.2
+Stable Tag: 1.0.3
 
 Automatically display HTML/PHP code posted in bbPress topics and replies.
 
@@ -18,6 +18,10 @@ And additionally, anything posted within `<pre>` tags will be automatically esca
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1.0.3 =
+
+* Removed all pre_content filters and added them back with the chunks not in `<pre>` tags, as well. This mainly fixes the issue with adding `rel="nofollow"` to all code snippiets with anchor tags in them.
 
 = 1.0.2 =
 

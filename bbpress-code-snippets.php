@@ -2,7 +2,7 @@
 /*
 Plugin Name: bbPress Code Snippets
 Description: Automatically display HTML/PHP code posted in bbPress topics and replies.
-Version: 1.0.2
+Version: 1.0.3
 Author: Jason Bobich
 Author URI: http://jasonbobich.com
 License: GPL2
@@ -50,7 +50,27 @@ function themeblvd_bb_code_snippets(){
 	// Convert HTML entities between <pre> and <code> in replies/topics.
 	add_filter( 'bbp_get_reply_content', 'themeblvd_bb_code', 2 );
 	add_filter( 'bbp_get_topic_content', 'themeblvd_bb_code', 2 );
-
+	
+	// Remove pre_content filters
+	remove_filter( 'bbp_new_reply_pre_content',  'balanceTags'     );
+	remove_filter( 'bbp_new_reply_pre_content',  'wp_filter_kses'  );
+	remove_filter( 'bbp_new_topic_pre_content',  'balanceTags'     );
+	remove_filter( 'bbp_new_topic_pre_content',  'wp_rel_nofollow' );
+	remove_filter( 'bbp_new_topic_pre_content',  'wp_filter_kses'  );
+	remove_filter( 'bbp_edit_reply_pre_content', 'balanceTags'     );
+	remove_filter( 'bbp_edit_reply_pre_content', 'wp_rel_nofollow' );
+	remove_filter( 'bbp_edit_reply_pre_content', 'wp_filter_kses'  );
+	remove_filter( 'bbp_edit_topic_pre_content', 'balanceTags'     );
+	remove_filter( 'bbp_edit_topic_pre_content', 'wp_rel_nofollow' );
+	remove_filter( 'bbp_edit_topic_pre_content', 'wp_filter_kses'  );
+	
+	// And now, loop through and put pre_content items back on the chunks 
+	// that are not in <pre> tags.
+	add_filter( 'bbp_new_reply_pre_content',  'themeblvd_bb_pre_content_formatter' );
+	add_filter( 'bbp_new_topic_pre_content',  'themeblvd_bb_pre_content_formatter' );
+	add_filter( 'bbp_edit_reply_pre_content', 'themeblvd_bb_pre_content_formatter' );
+	add_filter( 'bbp_edit_topic_pre_content', 'themeblvd_bb_pre_content_formatter' );
+	
 	// Remove bbPress wpautop on replies/topics
 	remove_filter( 'bbp_get_reply_content', 'make_clickable', 9 );
 	remove_filter( 'bbp_get_topic_content', 'make_clickable', 9 );
@@ -61,6 +81,7 @@ function themeblvd_bb_code_snippets(){
 	// are not in <pre> tags.
 	add_filter( 'bbp_get_reply_content', 'themeblvd_bb_content_formatter' );
 	add_filter( 'bbp_get_topic_content', 'themeblvd_bb_content_formatter' );
+	
 	
 }
 add_action( 'after_setup_theme', 'themeblvd_bb_code_snippets' );
@@ -153,6 +174,38 @@ function themeblvd_bb_content_formatter( $content ) {
 			$new_content .= '<pre>'.trim($matches[1]).'</pre>';
 		else
 			$new_content .= shortcode_unautop( wpautop( make_clickable( $piece ) ) );
+	}
+	
+	return $new_content;
+}
+
+/**
+ * Format content for replies and topics assuming that 
+ * wpautop has been removed.
+ * 
+ * @since 1.0.3
+ *
+ * @param string $content Content retrieved for reply or topic
+ * @return string $new_content Final content chunks put back together
+ */
+function themeblvd_bb_pre_content_formatter( $content ) {
+	
+	$new_content = '';
+	
+	// Patterns for <pre> tag
+	$pattern_full = '{(<pre>.*?\</pre>)}is';
+	$pattern_contents = '{<pre>(.*?)</pre>}is';
+	
+	// Split into pieces
+	$pieces = preg_split( $pattern_full, $content, -1, PREG_SPLIT_DELIM_CAPTURE );
+	
+	// Loop through and put wpautop on standard content 
+	// and put code back in code tags.
+	foreach( $pieces as $piece ) {
+		if( preg_match( $pattern_contents, $piece, $matches ) )
+			$new_content .= '<pre>'.trim($matches[1]).'</pre>';
+		else
+			$new_content .= wp_filter_kses( wp_rel_nofollow( balanceTags( $piece ) ) );
 	}
 	
 	return $new_content;
