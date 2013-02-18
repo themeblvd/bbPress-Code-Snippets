@@ -21,7 +21,10 @@ And additionally, anything posted within `<pre>` tags will be automatically esca
 
 = 1.0.3 =
 
-* Removed all pre_content filters and added them back with the chunks not in `<pre>` tags, as well. This mainly fixes the issue with adding `rel="nofollow"` to all code snippiets with anchor tags in them.
+* Improved posting code snippets overall for non-admin users.
+* Fixed issues with not accepting many HTML tags in code snippets non-admin users.
+* Fixed issue with `rel="nofollow"` getting added to `<a>` tags in code snippets.
+* Fixed issue with URL's in code snippets becoming clickable links.
 
 = 1.0.2 =
 

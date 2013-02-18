@@ -34,38 +34,19 @@ function themeblvd_bb_code_snippets(){
 	
 	// Allow normal user's to use <pre> tags.
 	add_action( 'init', 'themeblvd_bb_add_pre_tags' );
-	
-	// Convert PHP open/close tags so they'll save safely.
-	add_filter( 'bbp_edit_reply_pre_content', 'themeblvd_bb_save_php', 9 );
-	add_filter( 'bbp_new_reply_pre_content', 'themeblvd_bb_save_php', 9 );
-	add_filter( 'bbp_new_topic_pre_content', 'themeblvd_bb_save_php', 9 );
-	add_filter( 'bbp_edit_topic_pre_content', 'themeblvd_bb_save_php', 9 );
-	
-	// Put non-executable PHP back for display.
-	add_filter( 'bbp_get_form_reply_content', 'themeblvd_bb_display_php' );
-	add_filter( 'bbp_get_form_topic_content', 'themeblvd_bb_display_php' );
-	add_filter( 'bbp_get_reply_content', 'themeblvd_bb_display_php', 2 );
-	add_filter( 'bbp_get_topic_content', 'themeblvd_bb_display_php', 2 );
 
-	// Convert HTML entities between <pre> and <code> in replies/topics.
-	add_filter( 'bbp_get_reply_content', 'themeblvd_bb_code', 2 );
-	add_filter( 'bbp_get_topic_content', 'themeblvd_bb_code', 2 );
-	
-	// Remove pre_content filters
-	remove_filter( 'bbp_new_reply_pre_content',  'balanceTags'     );
-	remove_filter( 'bbp_new_topic_pre_content',  'balanceTags'     );
-	remove_filter( 'bbp_new_topic_pre_content',  'wp_rel_nofollow' );
-	remove_filter( 'bbp_edit_reply_pre_content', 'balanceTags'     );
-	remove_filter( 'bbp_edit_reply_pre_content', 'wp_rel_nofollow' );
-	remove_filter( 'bbp_edit_topic_pre_content', 'balanceTags'     );
-	remove_filter( 'bbp_edit_topic_pre_content', 'wp_rel_nofollow' );
-	
-	// And now, loop through and put pre_content items back on the chunks 
-	// that are not in <pre> tags.
-	add_filter( 'bbp_new_reply_pre_content',  'themeblvd_bb_pre_content_formatter' );
-	add_filter( 'bbp_new_topic_pre_content',  'themeblvd_bb_pre_content_formatter' );
-	add_filter( 'bbp_edit_reply_pre_content', 'themeblvd_bb_pre_content_formatter' );
-	add_filter( 'bbp_edit_topic_pre_content', 'themeblvd_bb_pre_content_formatter' );
+	// Convert HTML entities between <pre> and <code> tags
+	// before saving to the DB so WP doesn't filter them 
+	// out with wp_filter_kses
+	add_filter( 'bbp_new_reply_pre_content',  'themeblvd_bb_save_code', 9 );
+	add_filter( 'bbp_new_topic_pre_content',  'themeblvd_bb_save_code', 9 );
+	add_filter( 'bbp_edit_reply_pre_content', 'themeblvd_bb_save_code', 9 );
+	add_filter( 'bbp_edit_topic_pre_content', 'themeblvd_bb_save_code', 9 );
+
+	// Display HTML entities back to the user when editing their 
+	// topic or reply.
+	add_filter( 'bbp_get_form_reply_content', 'htmlspecialchars_decode' );
+	add_filter( 'bbp_get_form_topic_content', 'htmlspecialchars_decode' );
 	
 	// Remove bbPress wpautop on replies/topics
 	remove_filter( 'bbp_get_reply_content', 'make_clickable', 9 );
@@ -78,53 +59,22 @@ function themeblvd_bb_code_snippets(){
 	add_filter( 'bbp_get_reply_content', 'themeblvd_bb_content_formatter' );
 	add_filter( 'bbp_get_topic_content', 'themeblvd_bb_content_formatter' );
 	
-	
 }
 add_action( 'after_setup_theme', 'themeblvd_bb_code_snippets' );
 
 /**
- * Convert PHP open/close tags so they'll save.
- *
- * @since 1.0.0
- *
- * @param string $content Content sent from reply/topic form
- * @return string #content Content after php open/close tags have been disabled
- */
-function themeblvd_bb_save_php( $content ){
-	$content = str_replace( '<?', '&lt;?', $content );
-	$content = str_replace( '?>', '?&gt;', $content );
-	return $content;
-}
-
-/**
- * Put non-executable PHP back for display
- * 
- * @since 1.0.0
- *
- * @param string $content Content retrieved for reply or topic
- * @return string $content Content after open/close php tags have been put back for display 
- */
-function themeblvd_bb_display_php( $content ){
-	$content = str_replace( '&lt;?', '<?', $content );
-	$content = str_replace( '&amp;lt;?', '<?', $content );
-	$content = str_replace( '?&gt;', "?>", $content );
-	$content = str_replace( '?&amp;gt;', "?>", $content );
-	return $content;
-}
-
-/**
- * Add filter to bbPress's Topics and Reply 
- * content to convert any HTML code inserted 
- * between <code> and <pre> tags.
+ * Before saving topics and replies, convert HTML entities so 
+ * they'll save in a way we can display them between 
+ * <pre> and <code>.
  * 
  * @since 1.0.0
  *
  * @param string $content Content retrieved for reply or topic
  * @return string $content Content after HTML etities have been converted
  */
-function themeblvd_bb_code( $content ){
+function themeblvd_bb_save_code( $content ){
 	// Format HTML entities
-	$content = preg_replace_callback('#<(code|pre)([^>]*)>(((?!</?\1).)*|(?R))*</\1>#si', 'themeblvd_bb_convert_html', $content );
+	$content = preg_replace_callback('#<(code|pre)([^>]*)>(((?!</?\1).)*|(?R))*</\1>#si', 'themeblvd_bb_convert_code', $content );
 	return $content;
 }
 
@@ -137,11 +87,11 @@ function themeblvd_bb_code( $content ){
  * @param array $matches Matches from preg_replace_callback
  * @return string $code_block Code block after HTML entities have been converted
  */
-function themeblvd_bb_convert_html( $matches ) {  
+function themeblvd_bb_convert_code( $matches ) {  
     // Create code block
     $code_block = '<'.$matches[1].$matches[2].'>'.htmlspecialchars(substr(str_replace('<'.$matches[1].$matches[2].'>', '', $matches[0]), 0, -(strlen($matches[1]) + 3))).'</'.$matches[1].'>';
     return $code_block;
-}  
+}
 
 /**
  * Format content for replies and topics assuming that 
@@ -153,41 +103,9 @@ function themeblvd_bb_convert_html( $matches ) {
  * @return string $new_content Final content chunks put back together
  */
 function themeblvd_bb_content_formatter( $content ) {
-	
-	$new_content = '';
-	
-	// Patterns for <pre> tag
-	$pattern_full = '{(<pre>.*?\</pre>)}is';
-	$pattern_contents = '{<pre>(.*?)</pre>}is';
-	
-	// Split into pieces
-	$pieces = preg_split( $pattern_full, $content, -1, PREG_SPLIT_DELIM_CAPTURE );
-	
-	// Loop through and put wpautop on standard content 
-	// and put code back in code tags.
-	foreach( $pieces as $piece ) {
-		if( preg_match( $pattern_contents, $piece, $matches ) )
-			$new_content .= '<pre>'.trim($matches[1]).'</pre>';
-		else
-			$new_content .= shortcode_unautop( wpautop( make_clickable( $piece ) ) );
-	}
-	
-	return $new_content;
-}
 
-/**
- * Format content for replies and topics assuming that 
- * wpautop has been removed.
- * 
- * @since 1.0.3
- *
- * @param string $content Content retrieved for reply or topic
- * @return string $new_content Final content chunks put back together
- */
-function themeblvd_bb_pre_content_formatter( $content ) {
-	
 	$new_content = '';
-	
+
 	// Patterns for <pre> tag
 	$pattern_full = '{(<pre>.*?\</pre>)}is';
 	$pattern_contents = '{<pre>(.*?)</pre>}is';
@@ -196,12 +114,32 @@ function themeblvd_bb_pre_content_formatter( $content ) {
 	$pieces = preg_split( $pattern_full, $content, -1, PREG_SPLIT_DELIM_CAPTURE );
 	
 	// Loop through and put wpautop on standard content 
-	// and put code back in code tags.
+	// and put code back in <pre> tags.
 	foreach( $pieces as $piece ) {
-		if( preg_match( $pattern_contents, $piece, $matches ) )
+		if( preg_match( $pattern_contents, $piece, $matches ) ) {
+			
+			// Display raw content between <pre> tags
 			$new_content .= '<pre>'.trim($matches[1]).'</pre>';
-		else
-			$new_content .= wp_rel_nofollow( balanceTags( $piece ) );
+
+		} else {
+
+			// Filter through this content piece for <code> tags
+			$pattern_code_full = '{(<code>.*?\</code>)}is';
+			$pattern_code_contents = '{<code>(.*?)</code>}is';
+			$code_pieces = preg_split( $pattern_code_full, $piece, -1, PREG_SPLIT_DELIM_CAPTURE );
+			
+			// Only apply make_clickable() if not in a <code> tag.
+			$new_piece = '';
+			foreach( $code_pieces as $code_piece ) {
+				if( preg_match( $pattern_code_contents, $code_piece, $code_matches ) )
+					$new_piece .= '<code>'.trim($code_matches[1]).'</code>';
+				else
+					$new_piece .= make_clickable( $code_piece );
+			}
+			
+			// And now finish it off by applying wpautop to the whole chunk.
+			$new_content .= wpautop( $new_piece );
+		}
 	}
 	
 	return $new_content;
